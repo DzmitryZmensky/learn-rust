@@ -1,0 +1,12 @@
+[package]
+name = "parallel_text_search"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.62"
+crossbeam-channel = "0.5.6"
+num_cpus = "1"
+enum-iterator = "1.2.0"
