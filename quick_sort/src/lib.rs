@@ -1,14 +1,7 @@
 use std::thread::{self};
 use num_cpus;
 
-fn main() {
-    let mut v = [5,3,6,4,2,1,7];
-    println!("{:?}", &v);
-    quick_sort(&mut v);
-    println!("{:?}", &v);
-}
-
-fn quick_sort(slice: &mut [i32]) {
+pub fn quick_sort(slice: &mut [i32]) {
     let cores = num_cpus::get();
     quick_sort_recursive(slice, cores, 1);
 }
@@ -64,7 +57,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_data_in_reverse_order() {
+    fn arbitrary_data() {
         let mut v = [5,3,6,4,2,1,7];
         quick_sort(&mut v);
         let expected = [1,2,3,4,5,6,7];
@@ -72,7 +65,23 @@ mod tests {
     }
 
     #[test]
-    fn test_all_duplicates() {
+    fn already_sorted_data() {
+        let mut v = [1,2,3,4,5,6,7];
+        quick_sort(&mut v);
+        let expected = [1,2,3,4,5,6,7];
+        assert_eq!(expected, v);
+    }
+
+    #[test]
+    fn sorted_in_reverse_data() {
+        let mut v = [7,6,5,4,3,2,1];
+        quick_sort(&mut v);
+        let expected = [1,2,3,4,5,6,7];
+        assert_eq!(expected, v);
+    }
+
+    #[test]
+    fn all_duplicates() {
         let mut v = [1,1,1,1,1];
         quick_sort(&mut v);
         let expected = [1,1,1,1,1];
@@ -80,7 +89,7 @@ mod tests {
     }
 
     #[test]
-    fn test_some_duplicates() {
+    fn some_duplicates() {
         let mut v = [3,1,2,3,2];
         quick_sort(&mut v);
         let expected = [1,2,2,3,3];
@@ -88,7 +97,7 @@ mod tests {
     }
 
     #[test]
-    fn test_perf() {
+    fn perf() {
         let mut v = vec![0; 20 * 1000 * 1000];
         let min_value = i32::MIN;
         let max_value = i32::MAX;

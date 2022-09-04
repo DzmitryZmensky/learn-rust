@@ -8,3 +8,6 @@ edition = "2021"
 [dependencies]
 random-number = "0.1.7"
 num_cpus = "1"
+
+[lib]
+doctest = false
