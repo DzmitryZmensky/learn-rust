@@ -1,27 +1,30 @@
 use core::panic;
 use std::{cell::RefCell, rc::Rc};
 
-type ValueType = i32;
-type MaybeBoxedNode = Option<Rc<RefCell<BNode>>>;
+type MaybeBoxedNode<ValueType> = Option<Rc<RefCell<BNode<ValueType>>>>;
 
-pub struct BST {
-    pub root: MaybeBoxedNode,
+pub struct BST<ValueType: PartialOrd> {
+    root: MaybeBoxedNode<ValueType>,
 }
 
-pub struct BNode {
+struct BNode<ValueType: PartialOrd> {
     pub value: ValueType,
-    pub left: MaybeBoxedNode,
-    pub right: MaybeBoxedNode,
+    pub left: MaybeBoxedNode<ValueType>,
+    pub right: MaybeBoxedNode<ValueType>,
 }
 
-impl BST {
+impl<ValueType: PartialOrd> BST<ValueType> {
+    pub fn new() -> Self {
+        Self { root: None }
+    }
+
     pub fn contains(&self, value: ValueType) -> bool {
         let mut cur = self.root.clone();
         while let Some(boxed) = cur {
-            let node_value = boxed.borrow().value;            
-            if node_value > value {
+            let node_value = &boxed.borrow().value;            
+            if *node_value > value {
                 cur = boxed.borrow().left.clone();
-            } else if node_value < value{
+            } else if *node_value < value{
                 cur = boxed.borrow().right.clone();
             } else {
                 return true;
@@ -63,16 +66,8 @@ impl BST {
     }
 
     pub fn remove(&mut self, value: ValueType) -> bool {
-        if let Some(boxed) = &self.root {
-            if boxed.borrow().value == value { 
-                self.root = None;
-                return true; 
-            }
-        }
-         
         let mut cur = self.root.clone();
-        let empty: MaybeBoxedNode = None;
-        let mut parent = empty;
+        let mut parent: MaybeBoxedNode<ValueType> = None;
         let mut lparent = false;
         let mut rparent = false;
         loop {
@@ -90,7 +85,7 @@ impl BST {
                             } else if right_child.is_none() {
                                 left_child
                             } else {
-                                Self::bubble_smallest(left_child)
+                                Self::bubble_smallest(right_child)
                             };
                         if lparent {
                             if let Some(ref parent_node) = parent {
@@ -122,7 +117,7 @@ impl BST {
         }
     }
 
-    fn bubble_smallest(subtree: MaybeBoxedNode) -> MaybeBoxedNode {
+    fn bubble_smallest(subtree: MaybeBoxedNode<ValueType>) -> MaybeBoxedNode<ValueType> {
         if subtree.is_none() || subtree.as_ref().unwrap().borrow().left.is_none() {
             return subtree;
         }
@@ -144,6 +139,25 @@ impl BST {
 mod tests {
     use std::{cell::RefCell, rc::Rc};
     use crate::{BNode, BST};
+
+    #[test]
+    fn search_in_empty() {
+        let bst = BST::new();
+        assert!(!bst.contains(1));
+    }
+
+    #[test]
+    fn remove_from_empty() {
+        let mut bst = BST::new();
+        assert!(!bst.remove(1));
+    }
+
+    #[test]
+    fn add_to_empty() {
+        let mut bst = BST::new();
+        bst.add(1);
+        assert!(bst.contains(1));
+    }
 
     #[test]
     fn add_then_remove() {
