@@ -21,10 +21,10 @@ impl<ValueType: PartialOrd> BST<ValueType> {
     pub fn contains(&self, value: ValueType) -> bool {
         let mut cur = self.root.clone();
         while let Some(boxed) = cur {
-            let node_value = &boxed.borrow().value;            
+            let node_value = &boxed.borrow().value;
             if *node_value > value {
                 cur = boxed.borrow().left.clone();
-            } else if *node_value < value{
+            } else if *node_value < value {
                 cur = boxed.borrow().right.clone();
             } else {
                 return true;
@@ -33,10 +33,14 @@ impl<ValueType: PartialOrd> BST<ValueType> {
         false
     }
 
-    pub fn add (&mut self, value: ValueType) {
+    pub fn add(&mut self, value: ValueType) {
         match self.root.clone() {
-            None => { 
-                self.root = Some(Rc::new(RefCell::new(BNode{value, left: None, right: None})));
+            None => {
+                self.root = Some(Rc::new(RefCell::new(BNode {
+                    value,
+                    left: None,
+                    right: None,
+                })));
             }
             Some(node) => {
                 let mut cur = node;
@@ -46,21 +50,29 @@ impl<ValueType: PartialOrd> BST<ValueType> {
                             let clone = cur.borrow().left.as_ref().unwrap().clone();
                             cur = clone;
                         } else {
-                            cur.borrow_mut().left = Some(Rc::new(RefCell::new(BNode { value: value, left: None, right: None })));
+                            cur.borrow_mut().left = Some(Rc::new(RefCell::new(BNode {
+                                value: value,
+                                left: None,
+                                right: None,
+                            })));
                             return;
                         }
-                     } else if value > cur.borrow().value {
+                    } else if value > cur.borrow().value {
                         if cur.borrow().right.is_some() {
                             let clone = cur.borrow().right.as_ref().unwrap().clone();
                             cur = clone;
                         } else {
-                            cur.borrow_mut().right = Some(Rc::new(RefCell::new(BNode { value: value, left: None, right: None })));
+                            cur.borrow_mut().right = Some(Rc::new(RefCell::new(BNode {
+                                value: value,
+                                left: None,
+                                right: None,
+                            })));
                             return;
                         }
-                     } else {
+                    } else {
                         return;
                     }
-               }
+                }
             }
         }
     }
@@ -79,22 +91,19 @@ impl<ValueType: PartialOrd> BST<ValueType> {
                     if cur_boxed.borrow().value == value {
                         let left_child = cur_boxed.borrow_mut().left.take();
                         let right_child = cur_boxed.borrow_mut().right.take();
-                        let merged = 
-                            if left_child.is_none() {
-                                right_child
-                            } else if right_child.is_none() {
-                                left_child
-                            } else {
-                                Self::bubble_smallest(right_child)
-                            };
+                        let merged = Self::merge_children(left_child, right_child);
                         if lparent {
                             if let Some(ref parent_node) = parent {
                                 parent_node.borrow_mut().left = merged;
-                            } else { panic!(); }
+                            } else {
+                                panic!();
+                            }
                         } else if rparent {
                             if let Some(ref parent_node) = parent {
                                 parent_node.borrow_mut().right = merged;
-                            } else { panic!(); }
+                            } else {
+                                panic!();
+                            }
                         } else {
                             self.root = None;
                         }
@@ -117,11 +126,17 @@ impl<ValueType: PartialOrd> BST<ValueType> {
         }
     }
 
-    fn bubble_smallest(subtree: MaybeBoxedNode<ValueType>) -> MaybeBoxedNode<ValueType> {
-        if subtree.is_none() || subtree.as_ref().unwrap().borrow().left.is_none() {
-            return subtree;
+    fn merge_children(
+        left_child: MaybeBoxedNode<ValueType>,
+        right_child: MaybeBoxedNode<ValueType>,
+    ) -> MaybeBoxedNode<ValueType> {
+        if left_child.is_none() {
+            return right_child;
+        } else if right_child.is_none() {
+            return left_child;
         }
-        let mut cur = subtree.clone();
+
+        let mut cur = right_child.clone();
         let mut parent = None;
         while cur.as_ref().unwrap().borrow().left.is_some() {
             let clone = cur.as_ref().unwrap().borrow().left.clone();
@@ -129,16 +144,26 @@ impl<ValueType: PartialOrd> BST<ValueType> {
             cur = clone;
         }
 
-        let new_root = parent.unwrap().borrow_mut().left.take();
-        new_root.as_ref().unwrap().borrow_mut().right = subtree;
-        return new_root;
+        let merged_root;
+        match parent {
+            Some(parent_unwraped) => {
+                merged_root = parent_unwraped.borrow_mut().left.take();
+                merged_root.as_ref().unwrap().borrow_mut().right = right_child;
+            }
+            None => {
+                merged_root = right_child;
+            }
+        }
+
+        merged_root.as_ref().unwrap().borrow_mut().left = left_child;
+        merged_root
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use std::{cell::RefCell, rc::Rc};
     use crate::{BNode, BST};
+    use std::{cell::RefCell, rc::Rc};
 
     #[test]
     fn search_in_empty() {
@@ -161,15 +186,27 @@ mod tests {
 
     #[test]
     fn add_then_remove() {
-        let n1 = Rc::new(RefCell::new(BNode{value: 1, left: None, right: None}));
-        let n2 = Rc::new(RefCell::new(BNode{value: 3, left: None, right: None}));
-        let p = Rc::new(RefCell::new(BNode{value: 2, left: Some(n1), right: Some(n2)}));
-    
+        let n1 = Rc::new(RefCell::new(BNode {
+            value: 1,
+            left: None,
+            right: None,
+        }));
+        let n2 = Rc::new(RefCell::new(BNode {
+            value: 3,
+            left: None,
+            right: None,
+        }));
+        let p = Rc::new(RefCell::new(BNode {
+            value: 2,
+            left: Some(n1),
+            right: Some(n2),
+        }));
+
         let mut tree = BST { root: Some(p) };
-        assert_eq!(false, tree.contains(4));
+        assert!(!tree.contains(4));
         tree.add(4);
-        assert_eq!(true, tree.contains(4));
-        assert_eq!(true, tree.remove(4));
-        assert_eq!(false, tree.contains(4));
+        assert!(tree.contains(4));
+        assert!(tree.remove(4));
+        assert!(!tree.contains(4));
     }
 }
