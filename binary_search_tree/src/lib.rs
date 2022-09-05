@@ -1,5 +1,3 @@
-//pub mod sample;
-
 use core::panic;
 use std::{cell::RefCell, rc::Rc};
 
@@ -10,7 +8,6 @@ pub struct BST {
     pub root: MaybeBoxedNode,
 }
 
-//#[derive(Debug, PartialEq, Eq)]
 pub struct BNode {
     pub value: ValueType,
     pub left: MaybeBoxedNode,
@@ -33,13 +30,6 @@ impl BST {
         false
     }
 
-    pub fn add2 (&mut self, _value: ValueType) {
-        let mut cur = self.root.clone();
-        while let Some(boxed) = cur {
-            cur = boxed.borrow().left.clone();
-        }
-    }
-
     pub fn add (&mut self, value: ValueType) {
         match self.root.clone() {
             None => { 
@@ -56,16 +46,6 @@ impl BST {
                             cur.borrow_mut().left = Some(Rc::new(RefCell::new(BNode { value: value, left: None, right: None })));
                             return;
                         }
-
-                        // match cur.borrow().left {
-                        //     None => {
-                        //         cur.borrow_mut().left = Some(Rc::new(RefCell::new(BNode { value: value, left: None, right: None })));
-                        //         return;
-                        //     }
-                        //     Some(ref next) => {
-                        //         cur = next.clone();
-                        //     }
-                        // }
                      } else if value > cur.borrow().value {
                         if cur.borrow().right.is_some() {
                             let clone = cur.borrow().right.as_ref().unwrap().clone();
@@ -74,15 +54,6 @@ impl BST {
                             cur.borrow_mut().right = Some(Rc::new(RefCell::new(BNode { value: value, left: None, right: None })));
                             return;
                         }
-                        // match cur.borrow().right {
-                        //     None => {
-                        //         cur.borrow_mut().right = Some(Rc::new(RefCell::new(BNode { value: value, left: None, right: None })));
-                        //         return;
-                        //     }
-                        //     Some(ref next) => {
-                        //         cur = next.clone();
-                        //     }
-                        // }
                      } else {
                         return;
                     }
@@ -172,11 +143,10 @@ impl BST {
 #[cfg(test)]
 mod tests {
     use std::{cell::RefCell, rc::Rc};
-
     use crate::{BNode, BST};
 
     #[test]
-    fn test_add() {
+    fn add_then_remove() {
         let n1 = Rc::new(RefCell::new(BNode{value: 1, left: None, right: None}));
         let n2 = Rc::new(RefCell::new(BNode{value: 3, left: None, right: None}));
         let p = Rc::new(RefCell::new(BNode{value: 2, left: Some(n1), right: Some(n2)}));
