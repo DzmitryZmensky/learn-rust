@@ -1,5 +1,7 @@
 use std::sync::{Condvar, Mutex};
 
+// An implementation of ReadWriteLock.
+// todo: embed the data that is protected by the lock.
 pub struct RWLock {
     cvar: Condvar,
     mtx: Mutex<RWLockState>,
