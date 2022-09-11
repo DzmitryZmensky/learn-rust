@@ -12,12 +12,17 @@ fn quick_sort_recursive<T: Send + PartialOrd + Copy>(slice: &mut [T], cores: usi
     }
 
     let (left, right) = partition(slice);
-    if level < 10 && 2_u32.pow(level) as usize <= cores {
+
+    // 
+    if level < 10 /* protects pow() from overflow */ 
+        && 2_u32.pow(level) as usize <= cores /* limits level of parallelism */ {
         thread::scope(|scope| {
+            // run one brunch in parallel
             let join_handle = scope.spawn(||{
                 quick_sort_recursive(right, cores, level + 1);
             });
-
+            
+            // run other branch in current thread
             quick_sort_recursive(left, cores, level + 1);
             join_handle.join().unwrap();
         });
@@ -103,7 +108,7 @@ mod tests {
         let max_value = i32::MAX;
         random_number::random_fill!(v, min_value..max_value);
          
-        quick_sort_parallel(&mut v); // it takes approximately 20 seconds on 4 core machine
+        quick_sort_parallel(&mut v); // it takes approximately 20 seconds on 4 logical processors
         assert!(is_sorted(&v));
     }
 
