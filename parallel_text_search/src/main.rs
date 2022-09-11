@@ -12,6 +12,9 @@ struct SearchParams {
     thread_count: usize,
 }
 
+// A multi-threaded tool to search some text in a file.
+// Lines are sent into a channel that has multiple consumers and processed in parallel.
+// A full line is printed if text is found.
 fn main() -> anyhow::Result<()> {
     let search_params = populate_search_params();
     let (sender, receiver) = crossbeam_channel::bounded::<String>(100);
