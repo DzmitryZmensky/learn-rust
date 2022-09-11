@@ -1,18 +1,19 @@
-pub fn bsearch<T: PartialOrd>(v: &[T], value:T) -> Option<usize> {
-    if v.len() == 0 { return None }
-    let mut l: usize = 0;
-    let mut r = v.len() - 1;
-    while l < r {
-        let m = l + (r - l) / 2;
-        if v[m] >= value {
-            r = m;
+// Implements binary search in a slice of sorted elements, returns the found index if any.
+pub fn bsearch<T: PartialOrd>(input: &[T], value:T) -> Option<usize> {
+    if input.len() == 0 { return None }
+    let mut left_index: usize = 0;
+    let mut right_index = input.len() - 1;
+    while left_index < right_index {
+        let m = left_index + (right_index - left_index) / 2;
+        if input[m] >= value {
+            right_index = m;
         }
         else {
-            l = m + 1;
+            left_index = m + 1;
         }
     }
-    if v[l] == value {
-        Some(l)
+    if input[left_index] == value {
+        Some(left_index)
     } else {
         None
     }
@@ -24,81 +25,81 @@ mod tests {
 
     #[test]
     fn empty_dataset() {
-        let v = [];
-        let i = 2;
-        let result = bsearch(&v, i);
+        let input = [];
+        let value = 2;
+        let result = bsearch(&input, value);
         assert_eq!(None, result);
     }
 
     #[test]
     fn middle_location() {
-        let v = [1,2,3];
-        let i = 2;
-        let result = bsearch(&v, i);
+        let input = [1,2,3];
+        let value = 2;
+        let result = bsearch(&input, value);
         assert_eq!(Some(1), result);
     }
 
     #[test]
     fn middle_location_duplicates() {
-        let v = [1,2,2,3];
-        let i = 2;
-        let result = bsearch(&v, i);
+        let input = [1,2,2,3];
+        let value = 2;
+        let result = bsearch(&input, value);
         assert_eq!(Some(1), result);
     }
 
     #[test]
     fn leftmost_location() {
-        let v = [1,2,3];
-        let i = 1;
-        let result = bsearch(&v, i);
+        let input = [1,2,3];
+        let value = 1;
+        let result = bsearch(&input, value);
         assert_eq!(Some(0), result);
     }
 
     #[test]
     fn leftmost_location_duplicates() {
-        let v = [1,1,2,3];
-        let i = 1;
-        let result = bsearch(&v, i);
+        let input = [1,1,2,3];
+        let value = 1;
+        let result = bsearch(&input, value);
         assert_eq!(Some(0), result);
     }
 
     #[test]
     fn rightmost_location() {
-        let v = [1,2,3];
-        let i = 3;
-        let result = bsearch(&v, i);
+        let input = [1,2,3];
+        let value = 3;
+        let result = bsearch(&input, value);
         assert_eq!(Some(2), result);
     }
 
     #[test]
     fn rightmost_location_duplicates() {
-        let v = [1,2,3,3];
-        let i = 3;
-        let result = bsearch(&v, i);
+        let input = [1,2,3,3];
+        let value = 3;
+        let result = bsearch(&input, value);
         assert_eq!(Some(2), result);
     }
 
     #[test]
     fn missing_in_the_middle() {
-        let v = [1,3];
-        let i = 2;
-        let result = bsearch(&v, i);
+        let input = [1,3];
+        let value = 2;
+        let result = bsearch(&input, value);
         assert_eq!(None, result);
     }
 
     #[test]
     fn missing_greater_value() {
-        let v = [1,3];
-        let i = 4;
-        let result = bsearch(&v, i);
+        let input = [1,3];
+        let value = 4;
+        let result = bsearch(&input, value);
         assert_eq!(None, result);
     }
 
     #[test]
     fn missing_smaller_value() {
-        let v = [1,3];
-        let i = 0;
-        let result = bsearch(&v, i);
+        let input = [1,3];
+        let value = 0;
+        let result = bsearch(&input, value);
         assert_eq!(None, result);
     }
 }
