@@ -8,6 +8,7 @@ enum CMD {
 
 const TURN_DURATION: time::Duration = time::Duration::from_secs(1);
 
+// Two threads are passing a 'ball' via a channels, printing either 'ping' or 'pong' respective of thread.
 fn main() {
     let (ping_tx, ping_rx) = mpsc::sync_channel::<CMD>(1);
     let (pong_tx, pong_rx) = mpsc::sync_channel::<CMD>(1);
