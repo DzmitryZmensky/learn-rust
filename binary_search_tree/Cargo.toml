@@ -1,11 +1,13 @@
 [package]
-name = "binary_tree"
+name = "binary_search_tree"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+itertools = "0.10.3"
+random-number = "0.1.7"
 
 [lib]
 doctest = false

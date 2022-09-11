@@ -105,7 +105,7 @@ impl<ValueType: PartialOrd> BST<ValueType> {
                                 panic!();
                             }
                         } else {
-                            self.root = None;
+                            self.root = merged;
                         }
                         return true;
                     } else if cur_boxed.borrow().value > value {
@@ -147,7 +147,10 @@ impl<ValueType: PartialOrd> BST<ValueType> {
         let merged_root;
         match parent {
             Some(parent_unwraped) => {
-                merged_root = parent_unwraped.borrow_mut().left.take();
+                let smallest = parent_unwraped.borrow_mut().left.take();
+                parent_unwraped.borrow_mut().left =
+                    smallest.as_ref().unwrap().borrow_mut().right.take();
+                merged_root = smallest;
                 merged_root.as_ref().unwrap().borrow_mut().right = right_child;
             }
             None => {
@@ -163,6 +166,9 @@ impl<ValueType: PartialOrd> BST<ValueType> {
 #[cfg(test)]
 mod tests {
     use crate::{BNode, BST};
+    use ::random_number;
+    use itertools::Itertools;
+    use random_number::random;
     use std::{cell::RefCell, rc::Rc};
 
     #[test]
@@ -208,5 +214,47 @@ mod tests {
         assert!(tree.contains(4));
         assert!(tree.remove(4));
         assert!(!tree.contains(4));
+    }
+
+    #[test]
+    fn fuzzy_add_remove() {
+        let input_size = 7;
+        let input = 0..input_size;
+
+        // the loop runs factorial(input_size) number of iterations
+        for mut permutation in input.permutations(input_size) {
+            //println!("{:?}", permutation);
+            let mut bst: BST<usize> = BST::new();
+
+            // build a tree from each permutation
+            for item in permutation.iter() {
+                assert!(!bst.contains(*item));
+                bst.add(*item);
+                assert!(bst.contains(*item));
+            }
+
+            // randomly delete all values, one by one
+            for i in 0..permutation.len() {
+                let rnd_ndx = random!(i..permutation.len());
+                permutation.swap(i, rnd_ndx);
+                let value2remove = permutation[i];
+                //println!("removing {}", value2remove);
+                assert!(bst.remove(value2remove));
+                assert!(!bst.contains(value2remove));
+            }
+        }
+    }
+
+    #[test]
+    fn adhoc_troubleshooting() {
+        let input = vec![0, 2, 1];
+        let mut bst = BST::new();
+        for v in input {
+            bst.add(v);
+        }
+
+        assert!(bst.remove(1));
+        assert!(bst.remove(0));
+        assert!(bst.remove(2));
     }
 }
