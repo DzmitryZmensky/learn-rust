@@ -1,4 +1,7 @@
+use std::time::Duration;
+
 use echo::{EchoRequest, EchoResponse, echo_server};
+use tokio::time::sleep;
 use tonic::{transport::Server, Request, Response, Status};
 
 pub mod echo {
@@ -12,9 +15,8 @@ pub struct EchoService {}
 impl echo_server::Echo for EchoService {
     async fn hello(&self, request: Request<EchoRequest>) -> Result<Response<EchoResponse>, Status> {
         println!("Got a request: {:?}", request);
-
         let req = request.into_inner();
-
+        sleep(Duration::from_millis(req.echo_delay_millis)).await;
         let reply = EchoResponse { 
             output: format!("echo: {}", req.input) 
         };
